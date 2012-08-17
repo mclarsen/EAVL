@@ -178,14 +178,14 @@ eavlLogicalStructureQuadTree::QuadTreeCell::HasValue(float x, float y)
  
 float Legendre(int i, float x)
 {
-    float scale = sqrt(2 * i + 1);
+    float scale = sqrt(2. * i + 1.);
     switch (i)
     {
       case 0:    return scale * 1;
       case 1:    return scale * x;
       case 2:    return scale * (3. * x*x -1) / 2.;
     }
-    return -99999999;
+    return -9999999999;
 }
 
 int
@@ -216,7 +216,7 @@ eavlLogicalStructureQuadTree::QuadTreeCell::GetValue(float X, float Y)
     // no children had it, so it's gotta be us
     float xx = -1 + 2. * (X - xmin) / (xmax - xmin);
     float yy = -1 + 2. * (Y - ymin) / (ymax - ymin);
-    float scale = sqrt(1 << (lvl-1));
+    float scale = sqrt(static_cast<double>(1 << (lvl-1)));
     float sum = 0;
     /*float x0 = Legendre(0, xx);
     float x1 = Legendre(1, xx);
