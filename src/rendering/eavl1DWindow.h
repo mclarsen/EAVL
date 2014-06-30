@@ -6,6 +6,7 @@
 #include <eavlTextAnnotation.h>
 #include <eavl2DAxisAnnotation.h>
 #include <eavl2DFrameAnnotation.h>
+#include <eavlColorLegendAnnotation.h>
 #include "eavlScene.h"
 
 class eavl1DWindow : public eavlWindow
@@ -13,6 +14,7 @@ class eavl1DWindow : public eavlWindow
   protected:
     eavl2DAxisAnnotation *haxis, *vaxis;
     eavl2DFrameAnnotation *frame;
+    eavlColorLegendAnnotation *legend;
   public:
     eavl1DWindow(eavlColor bg, eavlRenderSurface *surf, eavlScene *s = NULL)
         : eavlWindow(bg,surf,s)
@@ -25,6 +27,7 @@ class eavl1DWindow : public eavlWindow
         haxis = new eavl2DAxisAnnotation(this);
         vaxis = new eavl2DAxisAnnotation(this);
         frame = new eavl2DFrameAnnotation(this);
+        legend = new eavlColorLegendAnnotation(this);
     }
     ~eavl1DWindow()
     {
@@ -49,12 +52,16 @@ class eavl1DWindow : public eavlWindow
         haxis->SetMoreOrLessTickAdjustment(fabs(view.viewportaspect) < .59 ? -1 : 0);
         vaxis->SetMoreOrLessTickAdjustment(fabs(view.viewportaspect) > 1.7 ? -1 : 0);
 
+        haxis->SetLogarithmic(view.view2d.logx);
+        vaxis->SetLogarithmic(view.view2d.logy);
+
         haxis->SetColor(eavlColor::black);
         haxis->SetScreenPosition(vl,vb, vr,vb);
         haxis->SetRangeForAutoTicks(view.view2d.l, view.view2d.r);
         haxis->SetMajorTickSize(0, .05, 1.0);
         haxis->SetMinorTickSize(0, .02, 1.0);
-        haxis->SetLabelAnchor(0.5, 1.0);
+        haxis->SetLabelAlignment(eavlTextAnnotation::HCenter,
+                                 eavlTextAnnotation::Top);
         haxis->Render(view);
 
         vaxis->SetColor(eavlColor::black);
@@ -62,8 +69,18 @@ class eavl1DWindow : public eavlWindow
         vaxis->SetRangeForAutoTicks(view.view2d.b, view.view2d.t);
         vaxis->SetMajorTickSize(.05 / view.windowaspect, 0, 1.0);
         vaxis->SetMinorTickSize(.02 / view.windowaspect, 0, 1.0);
-        vaxis->SetLabelAnchor(1.0, 0.47);
+        vaxis->SetLabelAlignment(eavlTextAnnotation::Right,
+                                 eavlTextAnnotation::VCenter);
         vaxis->Render(view);
+
+        legend->Clear();
+        for (unsigned int i=0; i<scene->plots.size(); ++i)
+        {
+            eavlCurveRenderer *cr = dynamic_cast<eavlCurveRenderer*>(scene->plots[i]);
+            if (cr)
+                legend->AddItem(cr->GetName(), cr->GetColor());
+        }
+        legend->Render(view);
 
         glFinish();
     }

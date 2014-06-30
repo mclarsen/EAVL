@@ -27,7 +27,7 @@ struct eavl3DView
 struct eavl2DView
 {
     double        l,r,t,b;
-    //bool logx, logy; ///\todo: would like to add logarithmic scaling
+    bool logx, logy;
 
     double xscale; ///< change x scale for non-equal x/y scaling
 };
@@ -56,6 +56,8 @@ struct eavlView
     {
         view3d.perspective = true;
         view2d.xscale = 1;
+        view2d.logx = false;
+        view2d.logy = false;
         vl = -1;  vr = +1;
         vb = -1;  vt = +1;
     }
@@ -65,6 +67,7 @@ struct eavlView
         windowaspect = w / h;
 
         double l=vl, r=vr, b=vb, t=vt;
+        ///\todo: urgent: this is wrong!  should be l,r,b,t!!!
         if (viewtype == EAVL_VIEW_2D)
             GetRealViewport(l,r,t,b);
 

@@ -13,6 +13,7 @@
 #include <utility>
 #include <algorithm>
 #include <cassert>
+#include <iomanip>
 
 using std::istream;
 using std::ostream;
@@ -33,9 +34,12 @@ using std::pair;
 using std::istringstream;
 using std::ostringstream;
 using std::filebuf;
+using std::setprecision;
+using std::fixed;
 
 ///\todo: This file is lazy.  Get rid of this entire STL.h file.
 
+/*
 template<class T>
 inline ostream& operator<<(ostream& out,
                            const vector<T> &v)
@@ -54,6 +58,7 @@ inline ostream& operator<<(ostream& out,
     out<<"]";
     return out;
 }
+*/
 
 
 #endif

@@ -10,6 +10,7 @@
 #include "eavlPoint3.h"
 #include "eavlException.h"
 #include "eavlIndexable.h"
+#include "eavlSerialize.h"
 
 // ****************************************************************************
 // Class:  eavlDataSet
@@ -49,6 +50,10 @@ class eavlDataSet
     {
         Clear();
     }
+    virtual string className() const {return "eavlDataSet";}
+    virtual eavlStream& serialize(eavlStream &s) const;
+    virtual eavlStream& deserialize(eavlStream &s);
+
     eavlIndexable<eavlArray> GetIndexableAxis(int i, eavlCoordinates *coordsys = NULL)
     {
         if (!coordsys)
@@ -297,6 +302,8 @@ class eavlDataSet
     void PrintSummary(ostream &out)
     {
         out << "eavlDataSet:\n";
+	int origPrecision = out.precision();
+	out << setprecision(4);
         //out << "   GetMemoryUsage() reports: "<<GetMemoryUsage()<<endl;
         out << "   npoints = "<<npoints << endl;
         if (logicalStructure)
@@ -324,9 +331,10 @@ class eavlDataSet
         {
             (*it)->PrintSummary(out);
         }
+	
+	out << setprecision(origPrecision);
     }
 };
-
 
 //API
 

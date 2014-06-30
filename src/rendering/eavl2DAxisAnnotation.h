@@ -3,6 +3,7 @@
 #define EAVL_2D_AXIS_ANNOTATION_H
 
 #include "eavlUtility.h"
+#include "eavlTextAnnotation.h"
 
 // ****************************************************************************
 // Class:  eavl2DAxisAnnotation
@@ -21,11 +22,13 @@ class eavl2DAxisAnnotation : public eavlAnnotation
     double maj_tx, maj_ty, maj_toff;
     double min_tx, min_ty, min_toff;
     double x0, y0, x1, y1;
-    double anchorx, anchory;
+    eavlTextAnnotation::HorizontalAlignment halign;
+    eavlTextAnnotation::VerticalAlignment valign;
     double lower, upper;
     double fontscale;
     int    linewidth;
     eavlColor color;
+    bool   logarithmic;
     vector<eavlTextAnnotation*> labels;
 
     vector<double> maj_positions;
@@ -41,12 +44,18 @@ class eavl2DAxisAnnotation : public eavlAnnotation
     eavl2DAxisAnnotation(eavlWindow *win) :
         eavlAnnotation(win)
     {
-        anchorx = anchory = 0;
+        halign = eavlTextAnnotation::HCenter;
+        valign = eavlTextAnnotation::VCenter;
         fontscale = 0.05;
         linewidth = 1;
         color = eavlColor::white;
+        logarithmic = false;
         moreOrLessTickAdjustment = 0;
         worldSpace = false;
+    }
+    void SetLogarithmic(bool l)
+    {
+        logarithmic = l;
     }
     void SetWorldSpace(bool ws)
     {
@@ -89,10 +98,11 @@ class eavl2DAxisAnnotation : public eavlAnnotation
         x1 = x1_;
         y1 = y1_;
     }
-    void SetLabelAnchor(float ax, float ay)
+    void SetLabelAlignment(eavlTextAnnotation::HorizontalAlignment h,
+                           eavlTextAnnotation::VerticalAlignment v)
     {
-        anchorx = ax;
-        anchory = ay;
+        halign = h;
+        valign = v;
     }
     void SetLabelFontScale(float s)
     {
@@ -105,8 +115,16 @@ class eavl2DAxisAnnotation : public eavlAnnotation
         lower = l;
         upper = u;
 
-        CalculateTicks(lower, upper, false, maj_positions, maj_proportions, moreOrLessTickAdjustment);
-        CalculateTicks(lower, upper, true,  min_positions, min_proportions, moreOrLessTickAdjustment);
+        if (logarithmic)
+        {
+            CalculateTicksLogarithmic(lower, upper, false, maj_positions, maj_proportions, moreOrLessTickAdjustment);
+            CalculateTicksLogarithmic(lower, upper, true,  min_positions, min_proportions, moreOrLessTickAdjustment);
+        }
+        else
+        {
+            CalculateTicks(lower, upper, false, maj_positions, maj_proportions, moreOrLessTickAdjustment);
+            CalculateTicks(lower, upper, true,  min_positions, min_proportions, moreOrLessTickAdjustment);
+        }
     }
     void SetMajorTicks(const vector<double> &pos, const vector<double> &prop)
     {
@@ -185,14 +203,14 @@ class eavl2DAxisAnnotation : public eavlAnnotation
             char val[256];
             snprintf(val, 256, "%g", maj_positions[i]);
             labels[i]->SetText(val);
-            if (fabs(maj_positions[i]) < 1e-10)
-                labels[i]->SetText("0");
+            //if (fabs(maj_positions[i]) < 1e-10)
+            //    labels[i]->SetText("0");
             if (worldSpace)
                 ((eavlBillboardTextAnnotation*)(labels[i]))->SetPosition(xs,ys,0);
             else
                 ((eavlScreenTextAnnotation*)(labels[i]))->SetPosition(xs,ys);
 
-            labels[i]->SetAnchor(anchorx,anchory);
+            labels[i]->SetAlignment(halign,valign);
         }
 
         // minor ticks

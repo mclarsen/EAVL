@@ -12,6 +12,9 @@ struct AverageFunctor1
     EAVL_FUNCTOR float operator()(int shapeType, int n, int ids[], const IN inputs)
     {
         float result = 0.f;
+        if (n == 0)
+            return result;
+
         for (int i=0; i<n; i++)
             result += collect(ids[i], inputs);
         return result / float(n);
@@ -24,6 +27,9 @@ struct AverageFunctor3
     EAVL_FUNCTOR tuple<float,float,float> operator()(int shapeType, int n, int ids[], const IN inputs)
     {
         tuple<float,float,float> result(0,0,0);
+        if (n == 0)
+            return result;
+
         for (int i=0; i<n; i++)
         {
             typename collecttype<IN>::const_type in(collect(ids[i], inputs));
@@ -55,7 +61,7 @@ void eavlCellToNodeRecenterMutator::Execute()
     if (field->GetAssociation() != eavlField::ASSOC_CELL_SET)
         THROW(eavlException, "expected cellset field")
 
-    if (field->GetAssocCellSet() != cellSetIndex)
+    if (field->GetAssocCellSet() != dataset->GetCellSet(cellSetIndex)->GetName())
         THROW(eavlException, "expected cellset field")
 
     int npts = dataset->GetNumPoints();

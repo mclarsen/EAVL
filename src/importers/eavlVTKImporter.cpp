@@ -533,6 +533,14 @@ eavlVTKImporter::ParseFormat()
 void
 eavlVTKImporter::AddArray(eavlFloatArray *arr, eavlVTKImporter::Location loc)
 {
+    string name = arr->GetName();
+    if (name == "xcoord" || name == "ycoord" || name == "zcoord" || name == "coords")
+    {
+        name = "file." + name;
+        arr->SetName(name);
+    }   
+
+    // if we split cells by dimensionality, split the fields too
     if (loc == LOC_CELLS &&
         cell_to_cell_splitmap.size() != 0)
     {
@@ -551,7 +559,7 @@ eavlVTKImporter::AddArray(eavlFloatArray *arr, eavlVTKImporter::Location loc)
 
             realCellIndex++;
             int nc = arr->GetNumberOfComponents();
-            eavlFloatArray *a = new eavlFloatArray(arr->GetName(),nc);
+            eavlFloatArray *a = new eavlFloatArray(name,nc);
             a->SetNumberOfTuples(counts[f]);
             int ctr = 0;
             for (int i=0; i<n; i++)
@@ -567,9 +575,10 @@ eavlVTKImporter::AddArray(eavlFloatArray *arr, eavlVTKImporter::Location loc)
                 }
             }
 
+            ///\todo: note: this assumes you add arrays after creating cell sets
             eavlField *field = new eavlField(0, a, eavlField::ASSOC_CELL_SET,
-                                             realCellIndex);
-            vars[a->GetName()] = field;
+                                             data->GetCellSet(realCellIndex)->GetName());
+            vars[name] = field;
         }
     }
     else
@@ -585,10 +594,10 @@ eavlVTKImporter::AddArray(eavlFloatArray *arr, eavlVTKImporter::Location loc)
             break;
           case LOC_CELLS:
             field = new eavlField(0, arr, eavlField::ASSOC_CELL_SET,
-                                  0); // if we're here, we only had one cell set
+                                  data->GetCellSet(0)->GetName()); // if we're here, we only had one cell set
             break;
         }
-        vars[arr->GetName()] = field;
+        vars[name] = field;
     }
 }
 
@@ -1067,6 +1076,7 @@ eavlVTKImporter::Parse_Polydata()
         {
             int n = cv[cv_index];
             newconn[index].AddElement(st,  n,  &(cv[cv_index+1]));
+            // we need to split fields by dimensionality
             cell_to_cell_splitmap.push_back(index);
             cv_index += n+1;
         }
@@ -1159,6 +1169,7 @@ eavlVTKImporter::Parse_Unstructured_Grid()
 
         int npts = orig_connectivity[conn_index];
         newconn[d].AddElement(st,  npts,  &(orig_connectivity[conn_index+1]));
+        // we need to split fields by dimensionality
         cell_to_cell_splitmap.push_back(d);
         conn_index += npts+1;
     }
